@@ -25,7 +25,7 @@ main()
         local device_queue_directory="${device_sys_directory}/queue"
         local device_logical_block_size_file="${device_queue_directory}/logical_block_size"
         local device_physical_block_size_file="${device_queue_directory}/physical_block_size"
-        # block values are in kilobyte
+        # block values are in kibibyte
         local device_partition_file="/proc/partitions"
         local device_partition_regex="${device_name}[0-9]+"
 
