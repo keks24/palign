@@ -60,7 +60,7 @@ main()
             '$0 ~ device_name_pattern \
             {
                 # convert block size to bytes
-                device_block_size_byte=$3 * 1024
+                device_block_size_byte=$3 * 1024;
 
                 device_attribute_array["Logical block size"]=device_logical_block_size;
                 device_attribute_array["Physical block size"]=device_physical_block_size;
@@ -85,7 +85,7 @@ main()
                         printf("\t\033[01;31mPartition not aligned!\033[0m\n");
                     }
                 }
-                print ""
+                print "";
             }' "${device_partition_file}"
     done
 }
