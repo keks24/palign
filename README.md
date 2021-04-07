@@ -26,6 +26,7 @@ $ echo "${PATH//:/\n}"
 ```
 
 * `sysfs` and `procfs` are configured properly
+    * `/sys/` and `/proc/` are accessable
 
 # Installation
 Clone the repository into your current working directory:
