@@ -24,70 +24,101 @@ main()
         local device_sys_directory="/sys/block/${device_name}"
         local device_queue_directory="${device_sys_directory}/queue"
         local device_logical_block_size_file="${device_queue_directory}/logical_block_size"
+        local device_logical_block_size
         local device_physical_block_size_file="${device_queue_directory}/physical_block_size"
-        # block values are in kibibyte
-        local device_partition_file="/proc/partitions"
+        local device_physical_block_size
+        declare -A device_block_size_array
+        local device_block_size_name
         local device_partition_regex="${device_name}[0-9]+"
+        declare -a device_partition_directory_array
+        local device_partition_directory
+        declare -A device_partition_attribute_array
+        local start_sector_size_alignment_result
+        local end_sector_size_alignment_result
 
         if [[ ! -d "${device_sys_directory}" ]]
         then
-            echo -e "\e[01;31m'${device_sys_directory}' is missing.\e[0m" >&2
+            echo -e "\e[01;31mSystem directory: '${device_sys_directory}' is missing.\e[0m" >&2
             exit 1
         elif [[ ! -d "${device_queue_directory}" ]]
         then
-            echo -e "\e[01;31m'${device_queue_directory}' is missing.\e[0m" >&2
-            exit 1
-        elif [[ ! -f "${device_partition_file}" ]]
-        then
-            echo -e "\e[01;31m'${device_partition_file}' is missing.\e[0m" >&2
+            echo -e "\e[01;31mQueue directory: '${device_queue_directory}' is missing.\e[0m" >&2
             exit 1
         elif [[ ! -f "${device_logical_block_size_file}" ]]
         then
-            echo -e "\e[01;31m'${device_logical_block_size_file}' is missing.\e[0m" >&2
+            echo -e "\e[01;31mLogical block size file: '${device_logical_block_size_file}' is missing.\e[0m" >&2
             exit 1
         elif [[ ! -f "${device_physical_block_size_file}" ]]
         then
-            echo -e "\e[01;31m'${device_physical_block_size_file}' is missing.\e[0m" >&2
+            echo -e "\e[01;31mPhysical block size file: '${device_physical_block_size_file}' is missing.\e[0m" >&2
             exit 1
         fi
 
-        local device_logical_block_size=$(< "${device_logical_block_size_file}")
-        local device_physical_block_size=$(< "${device_physical_block_size_file}")
+        device_block_size_array["Logical block size"]=$(< "${device_logical_block_size_file}")
+        device_block_size_array["Physical block size"]=$(< "${device_physical_block_size_file}")
+        # use shell globbing to determine hard drive partition directories
+        device_partition_directory_array=("${device_sys_directory}/${device_name}"*)
 
         echo -e "\e[01;37m/dev/${device_name}:"
-        /usr/bin/awk \
-            --assign="device_partition_regex=${device_partition_regex}" \
-            --assign="device_logical_block_size=${device_logical_block_size}" \
-            --assign="device_physical_block_size=${device_physical_block_size}" \
-            '$0 ~ device_partition_regex \
-            {
-                # convert block size to bytes
-                device_block_size_byte=$3 * 1024;
+        for device_partition_directory in "${device_partition_directory_array[@]}"
+        do
+            local device_partition_start_sector_file="${device_partition_directory}/start"
+            local device_partition_sector_size_file="${device_partition_directory}/size"
+            local device_partition_name="${device_partition_directory##*/}"
 
-                device_attribute_array["Logical block size"]=device_logical_block_size;
-                device_attribute_array["Physical block size"]=device_physical_block_size;
+            if [[ -f "${device_partition_start_sector_file}" ]]
+            then
+                device_partition_attribute_array["${device_partition_name}_partition_start_sector_size"]=$(< "${device_partition_directory}/start")
+                device_partition_attribute_array["${device_partition_name}_partition_start_sector_size_byte"]=$(( "${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size]}" * 512 ))
+            else
+                echo -e "\e[01;31mDevice partition start sector file: '${device_partition_start_sector_file}' is missing.\e[0m" >&2
+                exit 1
+            fi
 
-                printf("    \033[01;34m/dev/%s (Partition size: %d Byte)\033[0m\n", $4, device_block_size_byte);
-                for(device_attribute_index in device_attribute_array)
-                {
-                    printf("        Divided by %d Bytes (%s)\t%f Byte ", \
-                        device_attribute_array[device_attribute_index], \
-                        device_attribute_index, \
-                        device_block_size_byte / device_attribute_array[device_attribute_index]);
+            if [[ -f "${device_partition_sector_size_file}" ]]
+            then
+                device_partition_attribute_array["${device_partition_name}_partition_sector_size"]=$(< "${device_partition_directory}/size")
+                device_partition_attribute_array["${device_partition_name}_partition_size_byte"]=$(( "${device_partition_attribute_array[${device_partition_name}_partition_sector_size]}" * 512 ))
+            else
+                echo -e "\e[01;31mDevice partition sector size file: '${device_partition_sector_size_file}' is missing.\e[0m" >&2
+                exit 1
+            fi
 
-                    # result must be "0" in order to have optimal partition alignment.
-                    partition_alignment_result=device_block_size_byte % device_attribute_array[device_attribute_index];
+            device_partition_attribute_array["${device_partition_name}_partition_end_sector_size_byte"]=$(( "${device_partition_attribute_array[${device_partition_name}_partition_size_byte]}" + "${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size_byte]}" - 1 ))
 
-                    if(partition_alignment_result == 0)
-                    {
-                        printf("\t\033[01;32mPartition alignment optimal.\033[0m\n");
-                    }
-                    else
-                    {
-                        printf("\t\033[01;31mPartition not aligned!\033[0m\n");
-                    }
-                }
-            }' "${device_partition_file}"
+            echo -e "    \e[01;34m/dev/${device_partition_name}\e[0m"
+            echo -e "        \e[01;30mStart sector size (${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size_byte]} Byte)\e[0m"
+            for device_block_size_name in "${!device_block_size_array[@]}"
+            do
+                printf "            Divided by '${device_block_size_name}' (${device_block_size_array[${device_block_size_name}]} Byte): \t%f Byte " "$(( ${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size_byte]} / ${device_block_size_array[${device_block_size_name}]} ))"
+                # result must be "0" in order to have optimal partition alignment.
+                start_sector_size_alignment_result=$(( "${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size_byte]}" % "${device_block_size_array[${device_block_size_name}]}" ))
+
+                if [[ "${start_sector_size_alignment_result}" == "0" ]]
+                then
+                    echo -e "\t\e[01;32mPartition alignment optimal.\e[0m"
+                else
+                    echo -e "\t\e[01;31mPartition not aligned!\e[0m"
+                fi
+            done
+            unset device_block_size_name
+
+            echo -e "        \e[01;30mEnd sector size (${device_partition_attribute_array[${device_partition_name}_partition_end_sector_size_byte]} Byte)\e[0m"
+            for device_block_size_name in "${!device_block_size_array[@]}"
+            do
+                printf "            Divided by '${device_block_size_name}' (${device_block_size_array[${device_block_size_name}]} Byte): \t%f Byte " "$(( ${device_partition_attribute_array[${device_partition_name}_partition_end_sector_size_byte]} / ${device_block_size_array[${device_block_size_name}]} ))"
+                # result must be "0" in order to have optimal partition alignment.
+                end_sector_size_alignment_result=$(( "${device_partition_attribute_array[${device_partition_name}_partition_end_sector_size_byte]}" % "${device_block_size_array[${device_block_size_name}]}" ))
+
+                if [[ "${end_sector_size_alignment_result}" == "0" ]]
+                then
+                    echo -e "\t\e[01;32mPartition alignment optimal.\e[0m"
+                else
+                    echo -e "\t\e[01;31mPartition not aligned!\e[0m"
+                fi
+            done
+            unset device_block_size_name
+        done
         echo ""
     done
 }
