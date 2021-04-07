@@ -54,7 +54,7 @@ main()
         local device_logical_block_size=$(< "${device_logical_block_size_file}")
         local device_physical_block_size=$(< "${device_physical_block_size_file}")
 
-        echo -e "\e[01;34m/dev/${device_name}:"
+        echo -e "\e[01;37m/dev/${device_name}:"
         /usr/bin/awk \
             --assign="device_partition_regex=${device_partition_regex}" \
             --assign="device_logical_block_size=${device_logical_block_size}" \
