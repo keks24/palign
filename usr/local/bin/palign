@@ -1,0 +1,94 @@
+#!/bin/bash
+#############################################################################
+# Copyright 2021 Ramon Fischer                                              #
+#                                                                           #
+# Licensed under the Apache License, Version 2.0 (the "License");           #
+# you may not use this file except in compliance with the License.          #
+# You may obtain a copy of the License at                                   #
+#                                                                           #
+#     http://www.apache.org/licenses/LICENSE-2.0                            #
+#                                                                           #
+# Unless required by applicable law or agreed to in writing, software       #
+# distributed under the License is distributed on an "AS IS" BASIS,         #
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #
+# See the License for the specific language governing permissions and       #
+# limitations under the License.                                            #
+#############################################################################
+
+main()
+{
+    declare -a device_name_array=("${@}")
+
+    for device_name in "${device_name_array[@]:-sda}"
+    do
+        local device_sys_directory="/sys/block/${device_name}"
+        local device_queue_directory="${device_sys_directory}/queue"
+        local device_logical_block_size_file="${device_queue_directory}/logical_block_size"
+        local device_physical_block_size_file="${device_queue_directory}/physical_block_size"
+        # block values are in kilobyte
+        local device_partition_file="/proc/partitions"
+        local device_partitons
+
+        if [[ ! -d "${device_sys_directory}" ]]
+        then
+            echo -e "\e[01;31m'${device_sys_directory}' is missing.\e[0m" >&2
+            exit 1
+        elif [[ ! -d "${device_queue_directory}" ]]
+        then
+            echo -e "\e[01;31m'${device_queue_directory}' is missing.\e[0m" >&2
+            exit 1
+        elif [[ ! -f "${device_partition_file}" ]]
+        then
+            echo -e "\e[01;31m'${device_partition_file}' is missing.\e[0m" >&2
+            exit 1
+        elif [[ ! -f "${device_logical_block_size_file}" ]]
+        then
+            echo -e "\e[01;31m'${device_logical_block_size_file}' is missing.\e[0m" >&2
+            exit 1
+        elif [[ ! -f "${device_physical_block_size_file}" ]]
+        then
+            echo -e "\e[01;31m'${device_physical_block_size_file}' is missing.\e[0m" >&2
+            exit 1
+        fi
+
+        local device_logical_block_size=$(< "${device_logical_block_size_file}")
+        local device_physical_block_size=$(< "${device_physical_block_size_file}")
+
+        /usr/bin/awk \
+            --assign="device_name_pattern=${device_name}[0-9]+" \
+            --assign="device_logical_block_size=${device_logical_block_size}" \
+            --assign="device_physical_block_size=${device_physical_block_size}" \
+            '$0 ~ device_name_pattern \
+            {
+                # convert block size to bytes
+                device_block_size_byte=$3 * 1024
+
+                device_attribute_array["Logical block size"]=device_logical_block_size;
+                device_attribute_array["Physical block size"]=device_physical_block_size;
+
+                print "/dev/"$4 " (Partition size: " device_block_size_byte " Byte)";
+                for(device_attribute_index in device_attribute_array)
+                {
+                    printf("    Divided by %s Bytes (%s)\t%f Byte ", \
+                        device_attribute_array[device_attribute_index], \
+                        device_attribute_index, \
+                        device_block_size_byte / device_attribute_array[device_attribute_index]);
+
+                    # result must be "0" in order to have optimal partition alignment.
+                    partition_align_result=device_block_size_byte % device_attribute_array[device_attribute_index];
+
+                    if(partition_align_result == 0)
+                    {
+                        print "\tPartition alignment optimal."
+                    }
+                    else
+                    {
+                        print "\tPartition not aligned!";
+                    }
+                }
+                print ""
+            }' "${device_partition_file}"
+    done
+}
+
+main "${@}"
