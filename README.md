@@ -4,7 +4,7 @@
 # Prerequisites
 * The following packages are installed:
 ```no-highlight
-awk
+gawk
 ```
 
 * The path `/usr/local/bin/` exists in the `${PATH}` variable:
