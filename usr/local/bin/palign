@@ -69,7 +69,7 @@ main()
                 print "/dev/"$4 " (Partition size: " device_block_size_byte " Byte)";
                 for(device_attribute_index in device_attribute_array)
                 {
-                    printf("    Divided by %s Bytes (%s)\t%f Byte ", \
+                    printf("    Divided by %d Bytes (%s)\t%f Byte ", \
                         device_attribute_array[device_attribute_index], \
                         device_attribute_index, \
                         device_block_size_byte / device_attribute_array[device_attribute_index]);
