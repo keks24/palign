@@ -53,6 +53,7 @@ main()
         local device_logical_block_size=$(< "${device_logical_block_size_file}")
         local device_physical_block_size=$(< "${device_physical_block_size_file}")
 
+        echo -e "\e[01;34m/dev/${device_name}:"
         /usr/bin/awk \
             --assign="device_name_pattern=${device_name}[0-9]+" \
             --assign="device_logical_block_size=${device_logical_block_size}" \
@@ -65,10 +66,10 @@ main()
                 device_attribute_array["Logical block size"]=device_logical_block_size;
                 device_attribute_array["Physical block size"]=device_physical_block_size;
 
-                printf("\033[01;34m/dev/%s (Partition size: %d Byte)\033[0m\n", $4, device_block_size_byte);
+                printf("    \033[01;34m/dev/%s (Partition size: %d Byte)\033[0m\n", $4, device_block_size_byte);
                 for(device_attribute_index in device_attribute_array)
                 {
-                    printf("    Divided by %d Bytes (%s)\t%f Byte ", \
+                    printf("        Divided by %d Bytes (%s)\t%f Byte ", \
                         device_attribute_array[device_attribute_index], \
                         device_attribute_index, \
                         device_block_size_byte / device_attribute_array[device_attribute_index]);
@@ -85,8 +86,8 @@ main()
                         printf("\t\033[01;31mPartition not aligned!\033[0m\n");
                     }
                 }
-                print "";
             }' "${device_partition_file}"
+        echo ""
     done
 }
 
