@@ -27,6 +27,7 @@ main()
         local device_physical_block_size_file="${device_queue_directory}/physical_block_size"
         # block values are in kilobyte
         local device_partition_file="/proc/partitions"
+        local device_partition_regex="${device_name}[0-9]+"
 
         if [[ ! -d "${device_sys_directory}" ]]
         then
@@ -55,10 +56,10 @@ main()
 
         echo -e "\e[01;34m/dev/${device_name}:"
         /usr/bin/awk \
-            --assign="device_name_pattern=${device_name}[0-9]+" \
+            --assign="device_partition_regex=${device_partition_regex}" \
             --assign="device_logical_block_size=${device_logical_block_size}" \
             --assign="device_physical_block_size=${device_physical_block_size}" \
-            '$0 ~ device_name_pattern \
+            '$0 ~ device_partition_regex \
             {
                 # convert block size to bytes
                 device_block_size_byte=$3 * 1024;
