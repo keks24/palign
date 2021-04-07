@@ -27,7 +27,6 @@ main()
         local device_physical_block_size_file="${device_queue_directory}/physical_block_size"
         # block values are in kilobyte
         local device_partition_file="/proc/partitions"
-        local device_partitons
 
         if [[ ! -d "${device_sys_directory}" ]]
         then
