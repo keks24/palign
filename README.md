@@ -38,6 +38,11 @@ $ chmod 755 "/usr/local/bin/palign"
 
 # Usage
 ```bash
+$ palign [device_name...]
+```
+
+## Examples
+```bash
 $ palign
 /dev/sda:
     /dev/sda1
