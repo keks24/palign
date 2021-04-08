@@ -2,11 +2,6 @@
 `palign` checks, if hard drive partitions are aligned optimally by `logical block size` and `physical block size` using `bash`.
 
 # Prerequisites
-* The following packages are installed:
-```no-highlight
-gawk
-```
-
 * The path `/usr/local/bin/` exists in the `${PATH}` variable:
 ```bash
 $ echo "${PATH//:/\n}"
@@ -45,40 +40,48 @@ $ chmod 755 "/usr/local/bin/palign"
 ```bash
 $ palign
 /dev/sda:
-    /dev/sda1 (Partition size: 2000396746752 Byte)
-        Divided by 512 Bytes (Logical block size)       3907024896.000000 Byte  Partition alignment optimal.
-        Divided by 4096 Bytes (Physical block size)     488378112.000000 Byte   Partition alignment optimal.
+    /dev/sda1
+        Start sector size (2048 Sectors, 1048576 Byte)
+            Divided by 'Logical block size' (512 Byte):         4.000000 Sectors        Partition alignment optimal.
+            Divided by 'Physical block size' (4096 Byte):       0.000000 Sectors        Partition not aligned!
 ```
 ```bash
 $ palign sda sdb sdc sdd
 /dev/sda:
-    /dev/sda1 (Partition size: 2000396746752 Byte)
-        Divided by 512 Bytes (Logical block size)       3907024896.000000 Byte  Partition alignment optimal.
-        Divided by 4096 Bytes (Physical block size)     488378112.000000 Byte   Partition alignment optimal.
+    /dev/sda1
+        Start sector size (2048 Sectors, 1048576 Byte)
+            Divided by 'Logical block size' (512 Byte):         4.000000 Sectors        Partition alignment optimal.
+            Divided by 'Physical block size' (4096 Byte):       0.000000 Sectors        Partition not aligned!
 
 /dev/sdb:
-    /dev/sdb1 (Partition size: 10737418240 Byte)
-        Divided by 512 Bytes (Logical block size)       20971520.000000 Byte    Partition alignment optimal.
-        Divided by 512 Bytes (Physical block size)      20971520.000000 Byte    Partition alignment optimal.
-    /dev/sdb2 (Partition size: 489368346624 Byte)
-        Divided by 512 Bytes (Logical block size)       955797552.000000 Byte   Partition alignment optimal.
-        Divided by 512 Bytes (Physical block size)      955797552.000000 Byte   Partition alignment optimal.
+    /dev/sdb1
+        Start sector size (2048 Sectors, 1048576 Byte)
+            Divided by 'Logical block size' (512 Byte):         4.000000 Sectors        Partition alignment optimal.
+            Divided by 'Physical block size' (512 Byte):        4.000000 Sectors        Partition alignment optimal.
+    /dev/sdb2
+        Start sector size (20973568 Sectors, 10738466816 Byte)
+            Divided by 'Logical block size' (512 Byte):         40964.000000 Sectors    Partition alignment optimal.
+            Divided by 'Physical block size' (512 Byte):        40964.000000 Sectors    Partition alignment optimal.
 
 /dev/sdc:
-    /dev/sdc1 (Partition size: 2097152 Byte)
-        Divided by 512 Bytes (Logical block size)       4096.000000 Byte        Partition alignment optimal.
-        Divided by 512 Bytes (Physical block size)      4096.000000 Byte        Partition alignment optimal.
-    /dev/sdc2 (Partition size: 134217728 Byte)
-        Divided by 512 Bytes (Logical block size)       262144.000000 Byte      Partition alignment optimal.
-        Divided by 512 Bytes (Physical block size)      262144.000000 Byte      Partition alignment optimal.
-    /dev/sdc3 (Partition size: 59884068864 Byte)
-        Divided by 512 Bytes (Logical block size)       116961072.000000 Byte   Partition alignment optimal.
-        Divided by 512 Bytes (Physical block size)      116961072.000000 Byte   Partition alignment optimal.
+    /dev/sdc1
+        Start sector size (2048 Sectors, 1048576 Byte)
+            Divided by 'Logical block size' (512 Byte):         4.000000 Sectors        Partition alignment optimal.
+            Divided by 'Physical block size' (512 Byte):        4.000000 Sectors        Partition alignment optimal.
+    /dev/sdc2
+        Start sector size (6144 Sectors, 3145728 Byte)
+            Divided by 'Logical block size' (512 Byte):         12.000000 Sectors       Partition alignment optimal.
+            Divided by 'Physical block size' (512 Byte):        12.000000 Sectors       Partition alignment optimal.
+    /dev/sdc3
+        Start sector size (268288 Sectors, 137363456 Byte)
+            Divided by 'Logical block size' (512 Byte):         524.000000 Sectors      Partition alignment optimal.
+            Divided by 'Physical block size' (512 Byte):        524.000000 Sectors      Partition alignment optimal.
 
 /dev/sdd:
-    /dev/sdd1 (Partition size: 320070483968 Byte)
-        Divided by 512 Bytes (Logical block size)       625137664.000000 Byte   Partition alignment optimal.
-        Divided by 512 Bytes (Physical block size)      625137664.000000 Byte   Partition alignment optimal.
+    /dev/sdd1
+        Start sector size (40 Sectors, 20480 Byte)
+            Divided by 'Logical block size' (512 Byte):         0.000000 Sectors        Partition not aligned!
+            Divided by 'Physical block size' (512 Byte):        0.000000 Sectors        Partition not aligned!
 ```
 
 # Parameters
