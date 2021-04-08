@@ -20,8 +20,8 @@ $ echo "${PATH//:/\n}"
 /opt/bin
 ```
 
-* `sysfs` and `procfs` are configured properly
-    * `/sys/` and `/proc/` are accessable
+* `sysfs` is configured properly
+    * `/sys/block/<some_device_name>/queue/` and `/sys/block/<some_device_name>/<some_device_partition_name>/` are accessable
 
 # Installation
 Clone the repository into your current working directory:
