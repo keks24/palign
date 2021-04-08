@@ -38,7 +38,7 @@ $ chmod 755 "/usr/local/bin/palign"
 
 # Usage
 ```bash
-$ palign [device_name...]
+$ palign [device_name]...
 ```
 
 ## Examples
