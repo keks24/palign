@@ -84,15 +84,13 @@ main()
                 exit 1
             fi
 
-            device_partition_attribute_array["${device_partition_name}_partition_end_sector_size_byte"]=$(( "${device_partition_attribute_array[${device_partition_name}_partition_size_byte]}" + "${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size_byte]}" - 1 ))
-
             echo -e "    \e[01;34m/dev/${device_partition_name}\e[0m"
-            echo -e "        \e[01;30mStart sector size (${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size_byte]} Byte)\e[0m"
+            echo -e "        \e[01;30mStart sector size (${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size]} Sectors, ${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size_byte]} Byte)\e[0m"
             for device_block_size_name in "${!device_block_size_array[@]}"
             do
-                printf "            Divided by '${device_block_size_name}' (${device_block_size_array[${device_block_size_name}]} Byte): \t%f Byte " "$(( ${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size_byte]} / ${device_block_size_array[${device_block_size_name}]} ))"
+                printf "            Divided by '${device_block_size_name}' (${device_block_size_array[${device_block_size_name}]} Byte): \t%f Sectors " "$(( ${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size]} / ${device_block_size_array[${device_block_size_name}]} ))"
                 # result must be "0" in order to have optimal partition alignment.
-                start_sector_size_alignment_result=$(( "${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size_byte]}" % "${device_block_size_array[${device_block_size_name}]}" ))
+                start_sector_size_alignment_result=$(( "${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size]}" % "${device_block_size_array[${device_block_size_name}]}" ))
 
                 if [[ "${start_sector_size_alignment_result}" == "0" ]]
                 then
@@ -103,21 +101,25 @@ main()
             done
             unset device_block_size_name
 
-            echo -e "        \e[01;30mEnd sector size (${device_partition_attribute_array[${device_partition_name}_partition_end_sector_size_byte]} Byte)\e[0m"
-            for device_block_size_name in "${!device_block_size_array[@]}"
-            do
-                printf "            Divided by '${device_block_size_name}' (${device_block_size_array[${device_block_size_name}]} Byte): \t%f Byte " "$(( ${device_partition_attribute_array[${device_partition_name}_partition_end_sector_size_byte]} / ${device_block_size_array[${device_block_size_name}]} ))"
-                # result must be "0" in order to have optimal partition alignment.
-                end_sector_size_alignment_result=$(( "${device_partition_attribute_array[${device_partition_name}_partition_end_sector_size_byte]}" % "${device_block_size_array[${device_block_size_name}]}" ))
+            #device_partition_attribute_array["${device_partition_name}_partition_end_sector_size"]=$(( "${device_partition_attribute_array[${device_partition_name}_partition_sector_size]}" + "${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size]}" - 1 ))
+            #device_partition_attribute_array["${device_partition_name}_partition_end_sector_size_byte"]=$(( "${device_partition_attribute_array[${device_partition_name}_partition_size_byte]}" + "${device_partition_attribute_array[${device_partition_name}_partition_start_sector_size_byte]}" - 1 ))
 
-                if [[ "${end_sector_size_alignment_result}" == "0" ]]
-                then
-                    echo -e "\t\e[01;32mPartition alignment optimal.\e[0m"
-                else
-                    echo -e "\t\e[01;31mPartition not aligned!\e[0m"
-                fi
-            done
-            unset device_block_size_name
+            # check partition end sector alignment
+            #echo -e "        \e[01;30mEnd sector size (${device_partition_attribute_array[${device_partition_name}_partition_end_sector_size]} Sectors)\e[0m"
+            #for device_block_size_name in "${!device_block_size_array[@]}"
+            #do
+            #    printf "            Divided by '${device_block_size_name}' (${device_block_size_array[${device_block_size_name}]} Byte): \t%f Byte " "$(( ${device_partition_attribute_array[${device_partition_name}_partition_end_sector_size]} / ${device_block_size_array[${device_block_size_name}]} ))"
+            #    # result must be "0" in order to have optimal partition alignment.
+            #    end_sector_size_alignment_result=$(( "${device_partition_attribute_array[${device_partition_name}_partition_end_sector_size]}" % "${device_block_size_array[${device_block_size_name}]}" ))
+
+            #    if [[ "${end_sector_size_alignment_result}" == "0" ]]
+            #    then
+            #        echo -e "\t\e[01;32mPartition alignment optimal.\e[0m"
+            #    else
+            #        echo -e "\t\e[01;31mPartition not aligned!\e[0m"
+            #    fi
+            #done
+            #unset device_block_size_name
         done
         echo ""
     done
